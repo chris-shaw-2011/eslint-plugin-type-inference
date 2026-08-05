@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  metadata:
+    if: >-
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      should-release: ${{ steps.metadata.outputs.should-release }}
+      tag: ${{ steps.metadata.outputs.tag }}
+      version: ${{ steps.metadata.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - id: metadata
+        run: node scripts/get-release-metadata.mjs
+
+  publish:
+    needs: metadata
+    if: needs.metadata.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: write
+      id-token: write
+      packages: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          registry-url: https://npm.pkg.github.com
+          scope: "@chris-shaw-2011"
+          package-manager-cache: false
+      - run: npm install --global npm@latest
+      - run: npm ci
+        env:
+          READ_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - run: npm publish
+        env:
+          # This secret is only needed to bootstrap the first npm publication.
+          # Once Trusted Publishing is configured, leave it unset to use OIDC.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+          RELEASE_TAG: ${{ needs.metadata.outputs.tag }}
+        run: >-
+          gh release create "$RELEASE_TAG"
+          --target "$RELEASE_SHA"
+          --title "$RELEASE_TAG"
+          --generate-notes

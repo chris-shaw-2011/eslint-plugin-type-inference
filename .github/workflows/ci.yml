@@ -1,0 +1,138 @@
+name: CI
+
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      # Maintainer tooling requires Node 24+, so install and build on Node 26.
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@chris-shaw-2011"
+      - run: npm ci
+        env:
+          READ_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run check
+      - run: npm pack --dry-run
+
+  runtime-compatibility:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - node: 20.19.0
+            eslint: 9.39.5
+          - node: 20.19.0
+            eslint: 10.8.0
+          - node: 22
+            eslint: 9.39.5
+          - node: 22
+            eslint: 10.8.0
+          - node: 24
+            eslint: 9.39.5
+          - node: 24
+            eslint: 10.8.0
+          - node: 26
+            eslint: 9.39.5
+          - node: 26
+            eslint: 10.8.0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@chris-shaw-2011"
+      - run: npm ci
+        env:
+          READ_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm install --no-save --package-lock=false eslint@${{ matrix.eslint }}
+      - run: npm run build
+      # Only runtime-safe tests run after switching to the supported Node version.
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+      - run: npm run test:package
+
+  typescript-compatibility:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        typescript:
+          - 4.8.4
+          - 4.9.5
+          - 5.0.4
+          - 5.1.6
+          - 5.2.2
+          - 5.3.3
+          - 5.4.5
+          - 5.5.4
+          - 5.6.3
+          - 5.7.3
+          - 5.8.3
+          - 5.9.3
+          - 6.0.3
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@chris-shaw-2011"
+      - run: npm ci
+        env:
+          READ_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm install --no-save --package-lock=false typescript@${{ matrix.typescript }}
+      - run: npm test
+
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@chris-shaw-2011"
+      - run: npm ci
+        env:
+          READ_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run build
+      - run: npm run benchmark
+
+  large-benchmark:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@chris-shaw-2011"
+      - run: npm ci
+        env:
+          READ_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run build
+      - run: npm run benchmark:project
+        env:
+          TYPE_INFERENCE_BENCHMARK_LARGE: "true"

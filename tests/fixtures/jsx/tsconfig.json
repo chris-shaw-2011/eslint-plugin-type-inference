@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "jsx": "preserve",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true
+  },
+  "files": ["component.tsx"]
+}

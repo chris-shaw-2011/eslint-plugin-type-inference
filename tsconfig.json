@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"lib": ["ES2023"],
+		"module": "NodeNext",
+		"moduleDetection": "force",
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"noUncheckedSideEffectImports": true,
+		"noEmit": true,
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true,
+		"types": ["node"]
+	},
+	"include": [
+		"src/**/*.ts",
+		"tests/**/*.ts",
+		"knip.config.ts",
+		"tsup.config.ts",
+		"vitest.config.ts"
+	],
+	"exclude": ["dist", "node_modules"]
+}
