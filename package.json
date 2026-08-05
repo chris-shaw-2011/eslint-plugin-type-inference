@@ -1,6 +1,6 @@
 {
 	"name": "eslint-plugin-type-inference",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "Type-aware ESLint rules for safely preferring TypeScript inference.",
 	"license": "MIT",
 	"type": "module",
