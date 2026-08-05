@@ -1,0 +1,86 @@
+{
+	"name": "eslint-plugin-type-inference",
+	"version": "0.0.0",
+	"description": "Type-aware ESLint rules for safely preferring TypeScript inference.",
+	"license": "MIT",
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
+		}
+	},
+	"files": [
+		"dist",
+		"docs",
+		"README.md",
+		"LICENSE"
+	],
+	"engines": {
+		"node": ">=20.19.0"
+	},
+	"peerDependencies": {
+		"eslint": "^9.0.0 || ^10.0.0",
+		"typescript": ">=4.8.4 <6.1.0"
+	},
+	"dependencies": {
+		"@typescript-eslint/utils": "^8.66.0"
+	},
+	"devDependencies": {
+		"@chris-shaw-2011/lint": "^1.0.4",
+		"@typescript-eslint/eslint-plugin": "^8.66.0",
+		"@typescript-eslint/parser": "^8.66.0",
+		"@typescript-eslint/rule-tester": "^8.66.0",
+		"@types/node": "^26.1.2",
+		"eslint": "^10.8.0",
+		"globals": "^17.9.0",
+		"tsup": "^8.5.0",
+		"typescript": "6.0.3",
+		"vitest": "^4.1.10"
+	},
+	"scripts": {
+		"build": "tsup",
+		"lint": "npm run build && node ./node_modules/eslint/bin/eslint.js .",
+		"knip": "knip --config knip.config.ts --reporter compact",
+		"test": "vitest run",
+		"test:package": "node scripts/verify-build.mjs",
+		"typecheck": "tsc --noEmit",
+		"check": "npm run lint && npm run typecheck && npm run knip && npm test && npm run test:package",
+		"benchmark": "npm run benchmark:file && npm run benchmark:project",
+		"benchmark:file": "node --expose-gc benchmarks/typed-lint.mjs",
+		"benchmark:project": "node --expose-gc benchmarks/project-scale.mjs",
+		"prepack": "npm run check",
+		"prepublishOnly": "node scripts/verify-release-metadata.mjs"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/chris-shaw-2011/eslint-plugin-type-inference.git"
+	},
+	"bugs": {
+		"url": "https://github.com/chris-shaw-2011/eslint-plugin-type-inference/issues"
+	},
+	"homepage": "https://github.com/chris-shaw-2011/eslint-plugin-type-inference#readme",
+	"keywords": [
+		"eslint",
+		"eslintplugin",
+		"typescript",
+		"type-inference",
+		"static-analysis"
+	],
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	},
+	"allowScripts": {
+		"esbuild@0.27.7": true
+	}
+}
