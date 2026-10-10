@@ -52,7 +52,7 @@ function sourceHash(text: string) {
 	return `${text.length}:${hash >>> 0}`
 }
 
-const TYPE_FORMAT_FLAGS =
+const TYPE_FORMAT_FLAGS: ts.TypeFormatFlags =
 	ts.TypeFormatFlags.NoTruncation |
 	ts.TypeFormatFlags.UseFullyQualifiedType |
 	ts.TypeFormatFlags.WriteTypeArgumentsOfSignature
